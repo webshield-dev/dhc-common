@@ -11,8 +11,8 @@ const (
 	//CardVerificationStateVerified the card has been verified and all checks have passed
 	CardVerificationStateVerified CardVerificationState = "verified"
 
-	//CardVerificationStateInvalid one or more verifications have failed
-	CardVerificationStateInvalid CardVerificationState = "invalid"
+	//CardVerificationStatePartlyVerified one or more verifications have failed
+	CardVerificationStatePartlyVerified CardVerificationState = "partly_verified"
 
 	//CardVerificationStateCorrupt the digital signature and is invalid
 	CardVerificationStateCorrupt CardVerificationState = "corrupt"
@@ -54,6 +54,7 @@ type IssuerVerificationResults struct{
 	Trusted bool `json:"trusted"`
 
 }
+
 
 // ImmunizationVerificationResults immunization verification results
 type ImmunizationVerificationResults struct{}

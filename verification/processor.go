@@ -23,12 +23,18 @@ type Processor interface {
 	//SetExpired record expired
 	SetExpired()
 
+	//CardStructureVerified check if all card structure verifications have passed
+	CardStructureVerified() bool
+
 	//
 	// Issuer verifications
 	//
 
 	//SetIssuerTrusted issuer is on a trusted whitelist
 	SetIssuerTrusted()
+
+	//IssuerVerified check is all the issuers verifications have passed
+	IssuerVerified() bool
 }
 
 func NewProcessor() Processor {
@@ -53,6 +59,7 @@ func (e *v1Processor) GetResults() *CardVerificationResults {
 	return e.results
 }
 
+
 func (e *v1Processor) calcState() {
 
 	//state by assume card is great
@@ -69,21 +76,17 @@ func (e *v1Processor) calcState() {
 	}
 
 	//
-	//see if any of the card structure verifications failed if so the card is invalid
+	//see if any of the card structure verifications failed if so the card is partly verified
 	//
-	if e.results.CardStructure.SignatureNotChecked ||
-		!e.results.CardStructure.FetchedKey ||
-		!e.results.CardStructure.SignatureValid ||
-		e.results.CardStructure.Expired {
-		e.results.State = CardVerificationStateInvalid
+	if !e.CardStructureVerified() {
+		e.results.State = CardVerificationStatePartlyVerified
 		return
 	}
 
 	//
-	// see if any of the issuer verifications have failed, if so the card is invalid
-	//
-	if !e.results.Issuer.Trusted {
-		e.results.State = CardVerificationStateInvalid
+	// see if any of the issuer verifications have failed, if so the card is partly verified
+	if !e.IssuerVerified() {
+		e.results.State = CardVerificationStatePartlyVerified
 		return
 	}
 
@@ -96,6 +99,19 @@ func (e *v1Processor) calcState() {
 //
 // Card structure
 //
+
+
+func (e *v1Processor) CardStructureVerified() bool {
+
+	if e.results.CardStructure.SignatureNotChecked ||
+		!e.results.CardStructure.FetchedKey ||
+		!e.results.CardStructure.SignatureValid ||
+		e.results.CardStructure.Expired {
+		return false
+	}
+
+	return true
+}
 
 func (e *v1Processor) SetSignatureNotChecked() {
 	e.results.CardStructure.SignatureNotChecked = true
@@ -116,6 +132,10 @@ func (e *v1Processor) SetExpired() {
 //
 // Issuer state
 //
+
+func (e *v1Processor) IssuerVerified() bool {
+	return e.results.Issuer.Trusted
+}
 
 func (e *v1Processor) SetIssuerTrusted() {
 	e.results.Issuer.Trusted = true
