@@ -30,7 +30,7 @@ The card states are
 3. **Corrupted Card** (Red)
    1. Fetched issuer key and the signature is bad no other checks made
       1. Note invalid cards cannot be loaded, but maybe something happened since loaded, or issuer key changed
-4. **Invalid** (Orange) one or more verification failed
+4. **Partly-Verified** (Yellow) one or more verification failed
    1. card structure
        - get key - passed
        - check signature - passed

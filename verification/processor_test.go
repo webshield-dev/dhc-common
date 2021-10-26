@@ -14,6 +14,7 @@ func Test_FindVaccine(t *testing.T) {
         expectedState verification.CardVerificationState
         expectedCardStructureVerified bool
         expectedIssuerVerified bool
+        expectedImmunizationCriteria bool
 	}
 
 	testCases := []testCase{
@@ -22,15 +23,22 @@ func Test_FindVaccine(t *testing.T) {
             expectedState: verification.CardVerificationStateVerified,
             expectedCardStructureVerified: true,
             expectedIssuerVerified: true,
+            expectedImmunizationCriteria: true,
             results: &verification.CardVerificationResults{
                 CardStructure: &verification.CardStructureVerificationResults{
-                    SignatureNotChecked: false,
+                    SignatureChecked: true,
                     FetchedKey: true,
                     SignatureValid: true,
                     Expired: false,
                 },
                 Issuer: &verification.IssuerVerificationResults{
                     Trusted: true,
+                },
+                Immunization: &verification.ImmunizationVerificationResults{
+                    TrustedVaccineType: true,
+                    MetDosedRequiredCriteria: true,
+                    MetDaysSinceLastDoseCriteria: true,
+                    MetDaysBetweenDoesCriteria: true,
                 },
             },
 		},
@@ -39,9 +47,10 @@ func Test_FindVaccine(t *testing.T) {
             expectedState: verification.CardVerificationStateCorrupt,
             expectedCardStructureVerified: false,
             expectedIssuerVerified: false,
+            expectedImmunizationCriteria: false,
             results: &verification.CardVerificationResults{
                 CardStructure: &verification.CardStructureVerificationResults{
-                    SignatureNotChecked: false,
+                    SignatureChecked: true,
                     FetchedKey: true,
                     SignatureValid: false,
                     Expired: false,
@@ -49,6 +58,7 @@ func Test_FindVaccine(t *testing.T) {
                 Issuer: &verification.IssuerVerificationResults{
                     Trusted: false,
                 },
+                Immunization: &verification.ImmunizationVerificationResults{},
             },
         },
         {
@@ -56,9 +66,10 @@ func Test_FindVaccine(t *testing.T) {
             expectedState: verification.CardVerificationStatePartlyVerified,
             expectedCardStructureVerified: false,
             expectedIssuerVerified: true,
+            expectedImmunizationCriteria: false,
             results: &verification.CardVerificationResults{
                 CardStructure: &verification.CardStructureVerificationResults{
-                    SignatureNotChecked: false,
+                    SignatureChecked: true,
                     FetchedKey: false,
                     SignatureValid: false,
                     Expired: false,
@@ -66,6 +77,7 @@ func Test_FindVaccine(t *testing.T) {
                 Issuer: &verification.IssuerVerificationResults{
                     Trusted: true,
                 },
+                Immunization: &verification.ImmunizationVerificationResults{},
             },
         },
         {
@@ -73,9 +85,10 @@ func Test_FindVaccine(t *testing.T) {
             expectedState: verification.CardVerificationStatePartlyVerified,
             expectedCardStructureVerified: false,
             expectedIssuerVerified: true,
+            expectedImmunizationCriteria: false,
             results: &verification.CardVerificationResults{
                 CardStructure: &verification.CardStructureVerificationResults{
-                    SignatureNotChecked: false,
+                    SignatureChecked: true,
                     FetchedKey: true,
                     SignatureValid: true,
                     Expired: true,
@@ -83,6 +96,7 @@ func Test_FindVaccine(t *testing.T) {
                 Issuer: &verification.IssuerVerificationResults{
                     Trusted: true,
                 },
+                Immunization: &verification.ImmunizationVerificationResults{},
             },
         },
 
@@ -91,9 +105,10 @@ func Test_FindVaccine(t *testing.T) {
             expectedState: verification.CardVerificationStatePartlyVerified,
             expectedCardStructureVerified: true,
             expectedIssuerVerified: false,
+            expectedImmunizationCriteria: false,
             results: &verification.CardVerificationResults{
                 CardStructure: &verification.CardStructureVerificationResults{
-                    SignatureNotChecked: false,
+                    SignatureChecked: true,
                     FetchedKey: true,
                     SignatureValid: true,
                     Expired: false,
@@ -101,6 +116,7 @@ func Test_FindVaccine(t *testing.T) {
                 Issuer: &verification.IssuerVerificationResults{
                     Trusted: false,
                 },
+                Immunization: &verification.ImmunizationVerificationResults{},
             },
         },
 
@@ -112,8 +128,8 @@ func Test_FindVaccine(t *testing.T) {
             processor := verification.NewProcessor()
 
             cs := tc.results.CardStructure
-            if cs.SignatureNotChecked {
-                processor.SetSignatureNotChecked()
+            if cs.SignatureChecked {
+                processor.SetSignatureChecked()
             }
             if cs.FetchedKey {
                 processor.SetFetchedKey()
@@ -130,10 +146,28 @@ func Test_FindVaccine(t *testing.T) {
                 processor.SetIssuerTrusted()
             }
 
+
+
+            imm := tc.results.Immunization
+            if imm.TrustedVaccineType {
+                processor.SetTrustedVaccineType()
+            }
+            if imm.MetDosedRequiredCriteria {
+                processor.SetMetDosedRequiredCriteria()
+            }
+            if imm.MetDaysSinceLastDoseCriteria {
+                processor.SetMetDaysSinceLastDoseCriteria()
+            }
+            if imm.MetDaysBetweenDoesCriteria {
+                processor.SetMetDaysBetweenDoesCriteria()
+            }
+
             results := processor.GetResults()
             require.Equal(t, tc.expectedState, results.State)
             require.Equal(t, tc.expectedCardStructureVerified, processor.CardStructureVerified(), "card structure verified not expected")
             require.Equal(t, tc.expectedIssuerVerified, processor.IssuerVerified(), "issuer verified not expected")
+            require.Equal(t, tc.expectedImmunizationCriteria, processor.ImmunizationCriteriaMet(), "imm met not expected")
+
 
 		})
 	}

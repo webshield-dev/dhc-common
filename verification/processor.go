@@ -11,8 +11,8 @@ type Processor interface {
 	// Card struct setters
 	//
 
-	//SetSignatureNotChecked do not check signature for some reason
-	SetSignatureNotChecked()
+	//SetSignatureChecked do not check signature for some reason
+	SetSignatureChecked()
 
 	//SetFetchedKey record key fetched
 	SetFetchedKey()
@@ -26,6 +26,9 @@ type Processor interface {
 	//CardStructureVerified check if all card structure verifications have passed
 	CardStructureVerified() bool
 
+	//CardCorrupted true if card is corrupted
+	CardCorrupted() bool
+
 	//
 	// Issuer verifications
 	//
@@ -35,6 +38,27 @@ type Processor interface {
 
 	//IssuerVerified check is all the issuers verifications have passed
 	IssuerVerified() bool
+
+
+
+	//
+	// Immunization Criteria
+	//
+
+	//ImmunizationCriteriaMet true if all the immunization criteria have been met
+	ImmunizationCriteriaMet() bool
+
+	//SetTrustedVaccineType set as trusted vaccine
+	SetTrustedVaccineType()
+
+	//SetMetDosedRequiredCriteria set met doses required
+	SetMetDosedRequiredCriteria()
+
+	//SetMetDaysBetweenDoesCriteria set met days between
+	SetMetDaysBetweenDoesCriteria()
+
+	//SetMetDaysSinceLastDoseCriteria set met days since last dose
+	SetMetDaysSinceLastDoseCriteria()
 }
 
 func NewProcessor() Processor {
@@ -65,27 +89,22 @@ func (e *v1Processor) calcState() {
 	//state by assume card is great
 	e.results.State = CardVerificationStateUnknown
 
-	//
-	// Check if card is corrupted
-	//
-	if !e.results.CardStructure.SignatureNotChecked && //the signature is being checked
-		e.results.CardStructure.FetchedKey &&
-		!e.results.CardStructure.SignatureValid {
+	if e.CardCorrupted() {
 		e.results.State = CardVerificationStateCorrupt
 		return
 	}
 
-	//
-	//see if any of the card structure verifications failed if so the card is partly verified
-	//
 	if !e.CardStructureVerified() {
 		e.results.State = CardVerificationStatePartlyVerified
 		return
 	}
 
-	//
-	// see if any of the issuer verifications have failed, if so the card is partly verified
 	if !e.IssuerVerified() {
+		e.results.State = CardVerificationStatePartlyVerified
+		return
+	}
+
+	if !e.ImmunizationCriteriaMet() {
 		e.results.State = CardVerificationStatePartlyVerified
 		return
 	}
@@ -100,21 +119,32 @@ func (e *v1Processor) calcState() {
 // Card structure
 //
 
+func (e *v1Processor) CardCorrupted() bool {
+
+	if 	e.results.CardStructure.SignatureChecked &&
+		e.results.CardStructure.FetchedKey &&
+		!e.results.CardStructure.SignatureValid {
+		return true
+	}
+
+	return false
+}
+
 
 func (e *v1Processor) CardStructureVerified() bool {
 
-	if e.results.CardStructure.SignatureNotChecked ||
-		!e.results.CardStructure.FetchedKey ||
-		!e.results.CardStructure.SignatureValid ||
-		e.results.CardStructure.Expired {
-		return false
+	if e.results.CardStructure.SignatureChecked &&
+		e.results.CardStructure.FetchedKey &&
+		e.results.CardStructure.SignatureValid &&
+		!e.results.CardStructure.Expired {
+		return true
 	}
 
-	return true
+	return false
 }
 
-func (e *v1Processor) SetSignatureNotChecked() {
-	e.results.CardStructure.SignatureNotChecked = true
+func (e *v1Processor) SetSignatureChecked() {
+	e.results.CardStructure.SignatureChecked = true
 }
 
 func (e *v1Processor) SetFetchedKey() {
@@ -140,3 +170,38 @@ func (e *v1Processor) IssuerVerified() bool {
 func (e *v1Processor) SetIssuerTrusted() {
 	e.results.Issuer.Trusted = true
 }
+
+
+//
+// Immunization State
+//
+
+func (e *v1Processor) ImmunizationCriteriaMet() bool {
+	if e.results.Immunization.TrustedVaccineType &&
+		e.results.Immunization.MetDosedRequiredCriteria &&
+		e.results.Immunization.MetDaysBetweenDoesCriteria &&
+		e.results.Immunization.MetDaysSinceLastDoseCriteria {
+		return true
+	}
+
+	return false
+}
+
+
+func (e *v1Processor) SetTrustedVaccineType() {
+	e.results.Immunization.TrustedVaccineType = true
+}
+
+func (e *v1Processor) SetMetDosedRequiredCriteria() {
+	e.results.Immunization.MetDosedRequiredCriteria = true
+}
+
+func (e *v1Processor) SetMetDaysBetweenDoesCriteria() {
+	e.results.Immunization.MetDaysBetweenDoesCriteria = true
+}
+
+func (e *v1Processor) SetMetDaysSinceLastDoseCriteria() {
+	e.results.Immunization.MetDaysSinceLastDoseCriteria = true
+}
+
+

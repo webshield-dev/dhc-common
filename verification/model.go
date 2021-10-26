@@ -34,8 +34,8 @@ type CardVerificationResults struct {
 //CardStructureVerificationResults the card structure verifications results
 type CardStructureVerificationResults struct {
 
-	//SignatureNotChecked for some reason the verifier choose to not verify the card signature
-	SignatureNotChecked bool `json:"signature_not_checked"`
+	//SignatureChecked for some reason the verifier can choose to not verify the card signature
+	SignatureChecked bool `json:"signature_not_checked"`
 
 	//FetchedKey true if successful fetched the verification key
 	FetchedKey bool `json:"fetched_key"`
@@ -48,13 +48,21 @@ type CardStructureVerificationResults struct {
 }
 
 //IssuerVerificationResults issuer verification results
-type IssuerVerificationResults struct{
+type IssuerVerificationResults struct {
 
 	//Trusted issue is on a trusted whitelist
 	Trusted bool `json:"trusted"`
-
 }
 
-
 // ImmunizationVerificationResults immunization verification results
-type ImmunizationVerificationResults struct{}
+type ImmunizationVerificationResults struct {
+
+	//TrustedVaccineType the vaccine is on a regional whitelist
+	TrustedVaccineType bool `json:"trusted_vaccine_type"`
+
+	MetDosedRequiredCriteria bool `json:"met_dosed_required_criteria"`
+
+	MetDaysBetweenDoesCriteria bool `json:"met_days_between_does_criteria"`
+
+	MetDaysSinceLastDoseCriteria bool `json:"met_days_since_last_dose_criteria"`
+}
