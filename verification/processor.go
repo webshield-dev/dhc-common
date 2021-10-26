@@ -1,11 +1,15 @@
 package verification
 
+import (
+	"github.com/webshield-dev/dhc-common/vaccinemd"
+)
+
 //Processor can be created by a verifier to manage the verification state and calculate cards verification state
 //not designed to be thread safe. Create one per card verification
 type Processor interface {
 
-	//GetResults returns the current result state
-	GetResults() *CardVerificationResults
+	//GetVerificationResults returns the current card verification results based on current status
+	GetVerificationResults() *CardVerificationResults
 
 	//
 	// Card struct setters
@@ -39,31 +43,25 @@ type Processor interface {
 	//IssuerVerified check is all the issuers verifications have passed
 	IssuerVerified() bool
 
-
-
 	//
 	// Immunization Criteria
 	//
 
-	//ImmunizationCriteriaMet true if all the immunization criteria have been met
+	VerifyImmunization(
+		code *vaccinemd.Coding, // code to identify what vaccine,
+		region Region,
+		Doses []Dose, // the doses administered
+	) bool
+
+	//ImmunizationCriteriaMet true if all the immunization criteria have been met, can be called
+	//after verifyImmunization
 	ImmunizationCriteriaMet() bool
-
-	//SetTrustedVaccineType set as trusted vaccine
-	SetTrustedVaccineType()
-
-	//SetMetDosedRequiredCriteria set met doses required
-	SetMetDosedRequiredCriteria()
-
-	//SetMetDaysBetweenDoesCriteria set met days between
-	SetMetDaysBetweenDoesCriteria()
-
-	//SetMetDaysSinceLastDoseCriteria set met days since last dose
-	SetMetDaysSinceLastDoseCriteria()
 }
 
 func NewProcessor() Processor {
 
 	return &v1Processor{
+		mdRepo: vaccinemd.MakeRepo(),
 		results: &CardVerificationResults{
 			State:         CardVerificationStateUnknown,
 			CardStructure: &CardStructureVerificationResults{},
@@ -75,14 +73,14 @@ func NewProcessor() Processor {
 }
 
 type v1Processor struct {
+	mdRepo  vaccinemd.Repo
 	results *CardVerificationResults
 }
 
-func (e *v1Processor) GetResults() *CardVerificationResults {
+func (e *v1Processor) GetVerificationResults() *CardVerificationResults {
 	e.calcState()
 	return e.results
 }
-
 
 func (e *v1Processor) calcState() {
 
@@ -121,7 +119,7 @@ func (e *v1Processor) calcState() {
 
 func (e *v1Processor) CardCorrupted() bool {
 
-	if 	e.results.CardStructure.SignatureChecked &&
+	if e.results.CardStructure.SignatureChecked &&
 		e.results.CardStructure.FetchedKey &&
 		!e.results.CardStructure.SignatureValid {
 		return true
@@ -129,7 +127,6 @@ func (e *v1Processor) CardCorrupted() bool {
 
 	return false
 }
-
 
 func (e *v1Processor) CardStructureVerified() bool {
 
@@ -171,14 +168,14 @@ func (e *v1Processor) SetIssuerTrusted() {
 	e.results.Issuer.Trusted = true
 }
 
-
 //
 // Immunization State
 //
 
 func (e *v1Processor) ImmunizationCriteriaMet() bool {
-	if e.results.Immunization.TrustedVaccineType &&
-		e.results.Immunization.MetDosedRequiredCriteria &&
+	if !e.results.Immunization.UnKnownVaccineType &&
+		e.results.Immunization.TrustedVaccineType &&
+		e.results.Immunization.MetDosesRequiredCriteria &&
 		e.results.Immunization.MetDaysBetweenDoesCriteria &&
 		e.results.Immunization.MetDaysSinceLastDoseCriteria {
 		return true
@@ -187,21 +184,47 @@ func (e *v1Processor) ImmunizationCriteriaMet() bool {
 	return false
 }
 
+func (e *v1Processor) VerifyImmunization(
+	code *vaccinemd.Coding, // code to identify what vaccine,
+	region Region,
+	Doses []Dose, // the doses administered
+) bool {
 
-func (e *v1Processor) SetTrustedVaccineType() {
-	e.results.Immunization.TrustedVaccineType = true
+	if code == nil {
+		return false
+	}
+
+	vMD := e.mdRepo.FindCovidVaccine(code.System, code.Code)
+	if vMD == nil {
+		e.results.Immunization.UnKnownVaccineType = true
+		return false
+	}
+	e.results.Immunization.UnKnownVaccineType = false
+
+	//check if vaccine trusted for this region
+	e.results.Immunization.TrustedVaccineType = false
+	switch region {
+	case RegionUSA:
+		{
+			if vMD.CVXStatus == vaccinemd.CVSStatusActive {
+				e.results.Immunization.TrustedVaccineType = true
+			}
+		}
+	case RegionEU:
+		{
+			return false // fixme need to implement
+
+		}
+	}
+
+	//
+	// check if doses met
+	//
+	e.results.Immunization.MetDosesRequiredCriteria = false
+	if len(Doses) >= vMD.Doses {
+		e.results.Immunization.MetDosesRequiredCriteria = true
+	}
+
+	return false
+
 }
-
-func (e *v1Processor) SetMetDosedRequiredCriteria() {
-	e.results.Immunization.MetDosedRequiredCriteria = true
-}
-
-func (e *v1Processor) SetMetDaysBetweenDoesCriteria() {
-	e.results.Immunization.MetDaysBetweenDoesCriteria = true
-}
-
-func (e *v1Processor) SetMetDaysSinceLastDoseCriteria() {
-	e.results.Immunization.MetDaysSinceLastDoseCriteria = true
-}
-
-

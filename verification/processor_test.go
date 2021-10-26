@@ -6,119 +6,27 @@ import (
     "testing"
 )
 
-func Test_FindVaccine(t *testing.T) {
+func Test_VerifyCardStructure(t *testing.T) {
 
 	type testCase struct {
 		name string
-        results *verification.CardVerificationResults
+        cardStructureResults *verification.CardStructureVerificationResults
         expectedState verification.CardVerificationState
         expectedCardStructureVerified bool
-        expectedIssuerVerified bool
-        expectedImmunizationCriteria bool
 	}
 
 	testCases := []testCase{
 		{
-			name: "check verified card",
-            expectedState: verification.CardVerificationStateVerified,
+			name: "all verifications passed",
+            expectedState: verification.CardVerificationStatePartlyVerified,
             expectedCardStructureVerified: true,
-            expectedIssuerVerified: true,
-            expectedImmunizationCriteria: true,
-            results: &verification.CardVerificationResults{
-                CardStructure: &verification.CardStructureVerificationResults{
+            cardStructureResults: &verification.CardStructureVerificationResults{
                     SignatureChecked: true,
                     FetchedKey: true,
                     SignatureValid: true,
                     Expired: false,
                 },
-                Issuer: &verification.IssuerVerificationResults{
-                    Trusted: true,
-                },
-                Immunization: &verification.ImmunizationVerificationResults{
-                    TrustedVaccineType: true,
-                    MetDosedRequiredCriteria: true,
-                    MetDaysSinceLastDoseCriteria: true,
-                    MetDaysBetweenDoesCriteria: true,
-                },
-            },
 		},
-        {
-            name: "check corrupt card",
-            expectedState: verification.CardVerificationStateCorrupt,
-            expectedCardStructureVerified: false,
-            expectedIssuerVerified: false,
-            expectedImmunizationCriteria: false,
-            results: &verification.CardVerificationResults{
-                CardStructure: &verification.CardStructureVerificationResults{
-                    SignatureChecked: true,
-                    FetchedKey: true,
-                    SignatureValid: false,
-                    Expired: false,
-                },
-                Issuer: &verification.IssuerVerificationResults{
-                    Trusted: false,
-                },
-                Immunization: &verification.ImmunizationVerificationResults{},
-            },
-        },
-        {
-            name: "check invalid card, could not fetch verification key",
-            expectedState: verification.CardVerificationStatePartlyVerified,
-            expectedCardStructureVerified: false,
-            expectedIssuerVerified: true,
-            expectedImmunizationCriteria: false,
-            results: &verification.CardVerificationResults{
-                CardStructure: &verification.CardStructureVerificationResults{
-                    SignatureChecked: true,
-                    FetchedKey: false,
-                    SignatureValid: false,
-                    Expired: false,
-                },
-                Issuer: &verification.IssuerVerificationResults{
-                    Trusted: true,
-                },
-                Immunization: &verification.ImmunizationVerificationResults{},
-            },
-        },
-        {
-            name: "check invalid card, card has expired ",
-            expectedState: verification.CardVerificationStatePartlyVerified,
-            expectedCardStructureVerified: false,
-            expectedIssuerVerified: true,
-            expectedImmunizationCriteria: false,
-            results: &verification.CardVerificationResults{
-                CardStructure: &verification.CardStructureVerificationResults{
-                    SignatureChecked: true,
-                    FetchedKey: true,
-                    SignatureValid: true,
-                    Expired: true,
-                },
-                Issuer: &verification.IssuerVerificationResults{
-                    Trusted: true,
-                },
-                Immunization: &verification.ImmunizationVerificationResults{},
-            },
-        },
-
-        {
-            name: "check invalid card, issuer is not trusted",
-            expectedState: verification.CardVerificationStatePartlyVerified,
-            expectedCardStructureVerified: true,
-            expectedIssuerVerified: false,
-            expectedImmunizationCriteria: false,
-            results: &verification.CardVerificationResults{
-                CardStructure: &verification.CardStructureVerificationResults{
-                    SignatureChecked: true,
-                    FetchedKey: true,
-                    SignatureValid: true,
-                    Expired: false,
-                },
-                Issuer: &verification.IssuerVerificationResults{
-                    Trusted: false,
-                },
-                Immunization: &verification.ImmunizationVerificationResults{},
-            },
-        },
 
 	}
 
@@ -127,7 +35,7 @@ func Test_FindVaccine(t *testing.T) {
 
             processor := verification.NewProcessor()
 
-            cs := tc.results.CardStructure
+            cs := tc.cardStructureResults
             if cs.SignatureChecked {
                 processor.SetSignatureChecked()
             }
@@ -141,34 +49,102 @@ func Test_FindVaccine(t *testing.T) {
                 processor.SetExpired()
             }
 
-            is := tc.results.Issuer
-            if is.Trusted {
-                processor.SetIssuerTrusted()
-            }
 
-
-
-            imm := tc.results.Immunization
-            if imm.TrustedVaccineType {
-                processor.SetTrustedVaccineType()
-            }
-            if imm.MetDosedRequiredCriteria {
-                processor.SetMetDosedRequiredCriteria()
-            }
-            if imm.MetDaysSinceLastDoseCriteria {
-                processor.SetMetDaysSinceLastDoseCriteria()
-            }
-            if imm.MetDaysBetweenDoesCriteria {
-                processor.SetMetDaysBetweenDoesCriteria()
-            }
-
-            results := processor.GetResults()
+            results := processor.GetVerificationResults()
             require.Equal(t, tc.expectedState, results.State)
             require.Equal(t, tc.expectedCardStructureVerified, processor.CardStructureVerified(), "card structure verified not expected")
-            require.Equal(t, tc.expectedIssuerVerified, processor.IssuerVerified(), "issuer verified not expected")
-            require.Equal(t, tc.expectedImmunizationCriteria, processor.ImmunizationCriteriaMet(), "imm met not expected")
+            require.False(t, processor.IssuerVerified(), "issuer verified not expected")
+            require.False(t, processor.ImmunizationCriteriaMet(), "imm met not expected")
 
 
 		})
 	}
 }
+
+
+func Test_VerifyIssuer(t *testing.T) {
+
+    type testCase struct {
+        name string
+        issuerResults *verification.IssuerVerificationResults
+        expectedState verification.CardVerificationState
+        expectedIssuerVerified bool
+    }
+
+    testCases := []testCase{
+        {
+            name: "trusted issuer",
+            expectedState: verification.CardVerificationStatePartlyVerified,
+            expectedIssuerVerified: true,
+            issuerResults: &verification.IssuerVerificationResults{
+                Trusted: true,
+            },
+        },
+        {
+            name: "untrusted issuer",
+            expectedState: verification.CardVerificationStatePartlyVerified,
+            expectedIssuerVerified: false,
+            issuerResults: &verification.IssuerVerificationResults{
+                Trusted: false,
+            },
+        },
+    }
+
+    for _, tc := range testCases {
+        t.Run(tc.name, func(t *testing.T) {
+
+            processor := verification.NewProcessor()
+
+
+            is := tc.issuerResults
+            if is.Trusted {
+                processor.SetIssuerTrusted()
+            }
+
+
+            results := processor.GetVerificationResults()
+            require.Equal(t, tc.expectedState, results.State)
+            require.False(t, processor.CardStructureVerified(), "card structure verified not expected")
+            require.Equal(t, tc.expectedIssuerVerified, processor.IssuerVerified(), "issuer verified not expected")
+            require.False(t, processor.ImmunizationCriteriaMet(), "imm met not expected")
+        })
+    }
+}
+
+
+func Test_VerifyImmunization(t *testing.T) {
+
+    type testCase struct {
+        name string
+        doses []verification.Dose
+        expectedState verification.CardVerificationState
+        expectedImmunizationCriteria bool
+    }
+
+    testCases := []testCase{
+        {
+            name: "check verified card",
+            expectedState: verification.CardVerificationStatePartlyVerified,
+            doses: nil,
+            expectedImmunizationCriteria: false,
+        },
+
+    }
+
+    for _, tc := range testCases {
+        t.Run(tc.name, func(t *testing.T) {
+
+            processor := verification.NewProcessor()
+
+
+            results := processor.GetVerificationResults()
+            require.Equal(t, tc.expectedState, results.State)
+            require.False(t, processor.CardStructureVerified(), "card structure verified not expected")
+            require.False(t, processor.IssuerVerified(), "issuer verified not expected")
+            require.Equal(t, tc.expectedImmunizationCriteria, processor.ImmunizationCriteriaMet(), "imm met not expected")
+
+
+        })
+    }
+}
+

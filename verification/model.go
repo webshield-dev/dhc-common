@@ -57,12 +57,48 @@ type IssuerVerificationResults struct {
 // ImmunizationVerificationResults immunization verification results
 type ImmunizationVerificationResults struct {
 
+	//UnKnownVaccineType the vaccine is on a regional whitelist
+	UnKnownVaccineType bool `json:"unknown_vaccine_type"`
+
 	//TrustedVaccineType the vaccine is on a regional whitelist
 	TrustedVaccineType bool `json:"trusted_vaccine_type"`
 
-	MetDosedRequiredCriteria bool `json:"met_dosed_required_criteria"`
+	MetDosesRequiredCriteria bool `json:"met_doses_required_criteria"`
 
 	MetDaysBetweenDoesCriteria bool `json:"met_days_between_does_criteria"`
 
 	MetDaysSinceLastDoseCriteria bool `json:"met_days_since_last_dose_criteria"`
 }
+
+//Dose a vaccine dose, use this as opposed to a FHIR record for now as want to use across SHC and EU DGC
+//so seems easier to have a very simple structure
+type Dose struct {
+
+	//Status http://hl7.org/fhir/R4/immunization-definitions.html#Immunization.status
+	Status Code `json:"status,omitempty"`
+
+	//OccurrenceDateTime if a dateTime see http://hl7.org/fhir/r4/immunization-definitions.html#Immunization.occurrence_x_
+	OccurrenceDateTime string `json:"occurrenceDateTime,omitempty"`
+
+	//OccurrenceDateTime if a string see http://hl7.org/fhir/r4/immunization-definitions.html#Immunization.occurrence_x_
+	OccurrenceString string `json:"occurrenceString,omitempty"`
+}
+
+//Region that checking tests for
+type Region string
+
+const (
+	//RegionUSA check for a USA approved
+	RegionUSA Region = "USA"
+
+	//RegionEU EU approved
+	RegionEU Region = "EU"
+)
+
+//Code https://www.hl7.org/fhir/datatypes.html#code
+type Code string
+
+const (
+	//CodeCompleted action taken
+	CodeCompleted Code = "completed"
+)
