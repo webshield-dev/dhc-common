@@ -27,6 +27,50 @@ func Test_VerifyCardStructure(t *testing.T) {
                     Expired: false,
                 },
 		},
+        {
+            name: "should be corrupt if signature not valid",
+            expectedState: verification.CardVerificationStateCorrupt,
+            expectedCardStructureVerified: false,
+            cardStructureResults: &verification.CardStructureVerificationResults{
+                SignatureChecked: true,
+                FetchedKey: true,
+                SignatureValid: false,
+                Expired: false,
+            },
+        },
+        {
+            name: "should not verify if signature not checked",
+            expectedState: verification.CardVerificationStatePartlyVerified,
+            expectedCardStructureVerified: false,
+            cardStructureResults: &verification.CardStructureVerificationResults{
+                SignatureChecked: false,
+                FetchedKey: false,
+                SignatureValid: false,
+                Expired: false,
+            },
+        },
+        {
+            name: "should not verify if did not fetch key",
+            expectedState: verification.CardVerificationStatePartlyVerified,
+            expectedCardStructureVerified: false,
+            cardStructureResults: &verification.CardStructureVerificationResults{
+                SignatureChecked: true,
+                FetchedKey: false,
+                SignatureValid: false,
+                Expired: false,
+            },
+        },
+        {
+            name: "should not verify if card expired",
+            expectedState: verification.CardVerificationStatePartlyVerified,
+            expectedCardStructureVerified: false,
+            cardStructureResults: &verification.CardStructureVerificationResults{
+                SignatureChecked: true,
+                FetchedKey: true,
+                SignatureValid: true,
+                Expired: true,
+            },
+        },
 
 	}
 
