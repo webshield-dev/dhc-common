@@ -22,7 +22,7 @@ func MakeRepo() Repo {
 		}
 	}
 
-	return &v1Repo{code2CodingMap: code2CodingMap}
+	return &v1Repo{vaccineMD: vaccineMD, code2CodingMap: code2CodingMap}
 }
 
 //Repo provides methods to find out vaccine info
@@ -30,10 +30,15 @@ type Repo interface {
 
 	//FindCovidVaccine return vaccine metadata if the passed in coding is known CovidVaccine
 	FindCovidVaccine(system string, code string) *CovidVaccineMetadata
+
+
+	//FindTrustedVaccinesForRegion find for the specified region
+	FindTrustedVaccinesForRegion(region Region) []*CovidVaccineMetadata
 }
 
 
 type v1Repo struct {
+	vaccineMD []*CovidVaccineMetadata
 	code2CodingMap map[string]*CovidVaccineMetadata
 }
 
@@ -41,5 +46,24 @@ func (vmi *v1Repo) FindCovidVaccine(system string, code string) *CovidVaccineMet
 
 	key := code + "_" + system
 	return vmi.code2CodingMap[key]
+
+}
+
+
+func (vmi *v1Repo) FindTrustedVaccinesForRegion(region Region) []*CovidVaccineMetadata {
+
+	result := make([]*CovidVaccineMetadata, 0)
+	for _, md := range vmi.vaccineMD {
+		switch region {
+		case RegionUSA: {
+			if md.CVXStatus == CVSStatusActive {
+				result = append(result, md)
+			}
+		}
+		//fixme how to handle other regions
+		}
+	}
+
+	return result
 
 }

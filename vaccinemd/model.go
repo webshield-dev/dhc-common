@@ -38,7 +38,7 @@ const (
 	//CVSStatusActive active in US
 	CVSStatusActive CVSStatus = "Active"
 
-	//VSStatusNonUS active outside of US
+	//CVSStatusNonUS active outside of US
 	CVSStatusNonUS CVSStatus = "Non-US"
 )
 
@@ -55,4 +55,15 @@ type Coding struct {
 const (
 	//CVXSystem system code
 	CVXSystem string = "http://hl7.org/fhir/sid/cvx"
+)
+
+//Region that checking tests for
+type Region string
+
+const (
+	//RegionUSA check for a USA approved
+	RegionUSA Region = "USA"
+
+	//RegionEU EU approved
+	RegionEU Region = "EU"
 )

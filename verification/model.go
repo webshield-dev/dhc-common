@@ -91,16 +91,6 @@ type Dose struct {
 	OccurrenceString string `json:"occurrenceString,omitempty"`
 }
 
-//Region that checking tests for
-type Region string
-
-const (
-	//RegionUSA check for a USA approved
-	RegionUSA Region = "USA"
-
-	//RegionEU EU approved
-	RegionEU Region = "EU"
-)
 
 //Code https://www.hl7.org/fhir/datatypes.html#code
 type Code string

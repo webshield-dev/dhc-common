@@ -50,7 +50,7 @@ type Processor interface {
 	//
 
 	VerifyImmunization(
-		region Region,
+		region vaccinemd.Region,
 		Doses []*Dose, // the doses administered
 	) (bool, error)
 
@@ -186,7 +186,7 @@ func (e *v1Processor) ImmunizationCriteriaMet() bool {
 }
 
 func (e *v1Processor) VerifyImmunization(
-	region Region,
+	region vaccinemd.Region,
 	doses []*Dose, // the doses administered
 ) (bool, error) {
 
@@ -229,13 +229,13 @@ func (e *v1Processor) VerifyImmunization(
 	//check if vaccine trusted for this region
 	e.results.Immunization.TrustedVaccineType = false
 	switch region {
-	case RegionUSA:
+	case vaccinemd.RegionUSA:
 		{
 			if vMD.CVXStatus == vaccinemd.CVSStatusActive {
 				e.results.Immunization.TrustedVaccineType = true
 			}
 		}
-	case RegionEU:
+	case vaccinemd.RegionEU:
 		{
 			return false, fmt.Errorf("error verify immunization need to implement check EU region")
 
@@ -251,11 +251,10 @@ func (e *v1Processor) VerifyImmunization(
 		return false, nil //no point in checking dates as not enough doses
 	}
 
-	//
-	// http://build.fhir.org/ig/HL7/fhir-shc-vaccination-ig/StructureDefinition-shc-vaccination-dm-definitions.html#Immunization.occurrence[x]:occurrenceDateTime
-	//
 
+	//
 	// find last dose
+	//
 	var lastDose *Dose
 	for _, dose := range doses {
 
@@ -290,7 +289,9 @@ func (e *v1Processor) VerifyImmunization(
 		return false, nil // could not find an occurrence date so no point in continuing
 	}
 
+	//
 	//check duration since the dose was taken
+	//
 	today := time.Now()
 	dateMustHaveOccuredBy := today.AddDate(0, 0, -(vMD.DaysSinceLastDoseCriteria))
 
@@ -298,6 +299,10 @@ func (e *v1Processor) VerifyImmunization(
 	if dateMustHaveOccuredBy.After(*occurrenceTime) {
 		e.results.Immunization.MetDaysSinceLastDoseCriteria = true
 	}
+
+	//
+	// Check duration between doses
+	//
 
 	//fixme hard code that dates are ok, so can test
 	e.results.Immunization.MetDaysBetweenDoesCriteria = true
@@ -307,6 +312,9 @@ func (e *v1Processor) VerifyImmunization(
 }
 
 func getOccurrenceTime(dose *Dose) (occurrenceTime *time.Time, err error) {
+	//
+	// http://build.fhir.org/ig/HL7/fhir-shc-vaccination-ig/StructureDefinition-shc-vaccination-dm-definitions.html#Immunization.occurrence[x]:occurrenceDateTime
+	//
 	if dose.OccurrenceDateTime != "" {
 		occurrenceTime, err = dateStringTime(dose.OccurrenceDateTime)
 		if err != nil {
