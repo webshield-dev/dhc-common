@@ -1,7 +1,9 @@
 package verification
 
 import (
+	"fmt"
 	"github.com/webshield-dev/dhc-common/vaccinemd"
+	"time"
 )
 
 //Processor can be created by a verifier to manage the verification state and calculate cards verification state
@@ -48,10 +50,9 @@ type Processor interface {
 	//
 
 	VerifyImmunization(
-		code *vaccinemd.Coding, // code to identify what vaccine,
 		region Region,
-		Doses []Dose, // the doses administered
-	) bool
+		Doses []*Dose, // the doses administered
+	) (bool, error)
 
 	//ImmunizationCriteriaMet true if all the immunization criteria have been met, can be called
 	//after verifyImmunization
@@ -185,19 +186,43 @@ func (e *v1Processor) ImmunizationCriteriaMet() bool {
 }
 
 func (e *v1Processor) VerifyImmunization(
-	code *vaccinemd.Coding, // code to identify what vaccine,
 	region Region,
-	Doses []Dose, // the doses administered
-) bool {
+	doses []*Dose, // the doses administered
+) (bool, error) {
 
-	if code == nil {
-		return false
+	if len(doses) == 0 {
+		return false, nil
 	}
 
-	vMD := e.mdRepo.FindCovidVaccine(code.System, code.Code)
+	//
+	// Find system and code for vaccine, expect all doses to be the same system, code
+	//
+	system := ""
+	code := ""
+	for _, dose := range doses {
+		if system == "" {
+			system = dose.Coding.System
+		} else if system != dose.Coding.System {
+			return false, fmt.Errorf(
+				"error verify immunization expects all doses to be of same type got=%s expected=%s",
+				system, dose.Coding.System)
+
+		}
+		if code == "" {
+			code = dose.Coding.Code
+		} else if code != dose.Coding.Code {
+			return false, fmt.Errorf(
+				"error verify immunization expects all doses to be of same type got=%s expected=%s",
+				system, dose.Coding.Code)
+
+		}
+	}
+
+	vMD := e.mdRepo.FindCovidVaccine(system, code)
 	if vMD == nil {
+		//do not treat as an error
 		e.results.Immunization.UnKnownVaccineType = true
-		return false
+		return false, nil
 	}
 	e.results.Immunization.UnKnownVaccineType = false
 
@@ -212,19 +237,104 @@ func (e *v1Processor) VerifyImmunization(
 		}
 	case RegionEU:
 		{
-			return false // fixme need to implement
+			return false, fmt.Errorf("error verify immunization need to implement check EU region")
 
 		}
 	}
 
 	//
-	// check if doses met
+	// check if number of doses met
 	//
-	e.results.Immunization.MetDosesRequiredCriteria = false
-	if len(Doses) >= vMD.Doses {
-		e.results.Immunization.MetDosesRequiredCriteria = true
+	e.results.Immunization.MetDosesRequiredCriteria = true
+	if len(doses) < vMD.Doses {
+		e.results.Immunization.MetDosesRequiredCriteria = false
+		return false, nil //no point in checking dates as not enough doses
 	}
 
-	return false
+	//
+	// http://build.fhir.org/ig/HL7/fhir-shc-vaccination-ig/StructureDefinition-shc-vaccination-dm-definitions.html#Immunization.occurrence[x]:occurrenceDateTime
+	//
+
+	// find last dose
+	var lastDose *Dose
+	for _, dose := range doses {
+
+		if lastDose == nil {
+			lastDose = dose
+		} else {
+			lastDoseOccurrenceTime, err := getOccurrenceTime(lastDose)
+			if err != nil {
+				return false, err
+			}
+			currentDoseOccurrenceTime, err := getOccurrenceTime(dose)
+			if err != nil {
+				return false, err
+			}
+
+			if currentDoseOccurrenceTime != nil && currentDoseOccurrenceTime.After(*lastDoseOccurrenceTime) {
+				lastDose = dose
+			}
+		}
+	}
+
+	if lastDose == nil {
+		return false, nil //for some reason could not find a last dose so lets just treat as false
+	}
+
+	occurrenceTime, err := getOccurrenceTime(lastDose)
+	if err != nil {
+		return false, err
+	}
+
+	if occurrenceTime == nil {
+		return false, nil // could not find an occurrence date so no point in continuing
+	}
+
+	//check duration since the dose was taken
+	today := time.Now()
+	dateMustHaveOccuredBy := today.AddDate(0, 0, -(vMD.DaysSinceLastDoseCriteria))
+
+	e.results.Immunization.MetDaysSinceLastDoseCriteria = false
+	if dateMustHaveOccuredBy.After(*occurrenceTime) {
+		e.results.Immunization.MetDaysSinceLastDoseCriteria = true
+	}
+
+	//fixme hard code that dates are ok, so can test
+	e.results.Immunization.MetDaysBetweenDoesCriteria = true
+
+	return e.ImmunizationCriteriaMet(), nil
+
+}
+
+func getOccurrenceTime(dose *Dose) (occurrenceTime *time.Time, err error) {
+	if dose.OccurrenceDateTime != "" {
+		occurrenceTime, err = dateStringTime(dose.OccurrenceDateTime)
+		if err != nil {
+			return nil, err
+		}
+	} else if dose.OccurrenceString != "" {
+		occurrenceTime, err = dateStringTime(dose.OccurrenceDateTime)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return
+}
+
+func dateStringTime(date string) (*time.Time, error) {
+
+	result, err := time.Parse("2006-01-02", date)
+	if err == nil {
+		return &result, nil
+	}
+
+	result, err = time.Parse(time.RFC3339, date)
+	if err == nil {
+		return &result, nil
+	}
+
+	//not sure how to convert
+	return nil, fmt.Errorf("error verify immunization date format got=%s", date)
 
 }

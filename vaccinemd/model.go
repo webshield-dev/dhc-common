@@ -10,7 +10,7 @@ type CovidVaccineMetadata struct {
 	Codes []Coding
 
 	//CVXStatus cvx status from the cdc table
-	CVXStatus CVSStatus  `json:"cvs_status"`
+	CVXStatus CVSStatus `json:"cvs_status"`
 
 	//Doses number of doses required
 	Doses int `json:"doses"`
@@ -42,8 +42,6 @@ const (
 	CVSStatusNonUS CVSStatus = "Non-US"
 )
 
-
-
 //Coding http://hl7.org/fhir/R4/datatypes.html#Coding
 type Coding struct {
 
@@ -53,3 +51,8 @@ type Coding struct {
 	//Code http://hl7.org/fhir/R4/datatypes-definitions.html#Coding.code
 	Code string `json:"code,omitempty" yaml:"code,omitempty"`
 }
+
+const (
+	//CVXSystem system code
+	CVXSystem string = "http://hl7.org/fhir/sid/cvx"
+)

@@ -7,11 +7,11 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 		{
 			Codes: []Coding{
 				{
-					System: "http://hl7.org/fhir/sid/cvx",
+					System: CVXSystem,
 					Code:   "207",
 				},
 			},
-			CVXStatus: CVSStatusActive,
+			CVXStatus:                    CVSStatusActive,
 			Doses:                        2,
 			DaysSinceLastDoseCriteria:    14,
 			DaysBetweenDoesCriteriaBegin: 24,
@@ -22,11 +22,11 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 		{
 			Codes: []Coding{
 				{
-					System: "http://hl7.org/fhir/sid/cvx",
+					System: CVXSystem,
 					Code:   "208",
 				},
 			},
-			CVXStatus: CVSStatusActive,
+			CVXStatus:                    CVSStatusActive,
 			Doses:                        2,
 			DaysSinceLastDoseCriteria:    14,
 			DaysBetweenDoesCriteriaBegin: 17,
@@ -37,11 +37,11 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 		{
 			Codes: []Coding{
 				{
-					System: "http://hl7.org/fhir/sid/cvx",
+					System: CVXSystem,
 					Code:   "210",
 				},
 			},
-			CVXStatus: CVSStatusNonUS,
+			CVXStatus:                 CVSStatusNonUS,
 			Doses:                     2,
 			DaysSinceLastDoseCriteria: 14,
 			SaleProprietaryName:       "AstraZeneca COVID-19 Vaccine",
@@ -50,11 +50,11 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 		{
 			Codes: []Coding{
 				{
-					System: "http://hl7.org/fhir/sid/cvx",
+					System: CVXSystem,
 					Code:   "212",
 				},
 			},
-			CVXStatus: CVSStatusActive,
+			CVXStatus:                 CVSStatusActive,
 			Doses:                     1,
 			DaysSinceLastDoseCriteria: 14,
 			SaleProprietaryName:       "Janssen COVID-19 Vaccine",

@@ -1,5 +1,9 @@
 package verification
 
+import (
+	"github.com/webshield-dev/dhc-common/vaccinemd"
+)
+
 // CardVerificationState the card's verification state, see below
 type CardVerificationState string
 
@@ -73,6 +77,9 @@ type ImmunizationVerificationResults struct {
 //Dose a vaccine dose, use this as opposed to a FHIR record for now as want to use across SHC and EU DGC
 //so seems easier to have a very simple structure
 type Dose struct {
+
+	//Code vaccine code
+	Coding vaccinemd.Coding
 
 	//Status http://hl7.org/fhir/R4/immunization-definitions.html#Immunization.status
 	Status Code `json:"status,omitempty"`
