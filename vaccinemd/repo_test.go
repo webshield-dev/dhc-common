@@ -48,3 +48,31 @@ func Test_FindVaccine(t *testing.T) {
 	}
 
 }
+
+
+func Test_FindTrustedVaccine(t *testing.T) {
+
+	type testCase struct {
+		name   string
+		region vaccinemd.Region
+		expectedResultCount int
+	}
+
+	testCases := []testCase{
+		{
+			name:   "should find trusted for USA",
+			region: vaccinemd.RegionUSA,
+			expectedResultCount: 3,
+		},
+	}
+
+	repo := vaccinemd.MakeRepo()
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			vmd := repo.FindTrustedVaccinesForRegion(tc.region)
+			require.Equal(t, tc.expectedResultCount, len(vmd))
+		})
+	}
+
+}

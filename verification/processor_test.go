@@ -5,7 +5,7 @@ import (
 	"github.com/webshield-dev/dhc-common/vaccinemd"
 	"github.com/webshield-dev/dhc-common/verification"
 	"testing"
-    "time"
+	"time"
 )
 
 func Test_VerifyCardStructure(t *testing.T) {
@@ -155,7 +155,7 @@ func Test_VerifyImmunization(t *testing.T) {
 
 	type testCase struct {
 		name                            string
-		region                          verification.Region
+		region                          vaccinemd.Region
 		doses                           []*verification.Dose
 		expectedState                   verification.CardVerificationState
 		expectedMetImmunizationCriteria bool
@@ -165,7 +165,7 @@ func Test_VerifyImmunization(t *testing.T) {
 		{
 			name:          "all criteria met two doses",
 			expectedState: verification.CardVerificationStatePartlyVerified,
-			region:        verification.RegionUSA,
+			region:        vaccinemd.RegionUSA,
 			doses: []*verification.Dose{
 				{
 					Coding: vaccinemd.Coding{
@@ -186,26 +186,26 @@ func Test_VerifyImmunization(t *testing.T) {
 			},
 			expectedMetImmunizationCriteria: true,
 		},
-        {
-            name:          "all criteria met one doses",
-            expectedState: verification.CardVerificationStatePartlyVerified,
-            region:        verification.RegionUSA,
-            doses: []*verification.Dose{
-                {
-                    Coding: vaccinemd.Coding{
-                        System: vaccinemd.CVXSystem,
-                        Code:   "212", //janseen
-                    },
+		{
+			name:          "all criteria met one doses",
+			expectedState: verification.CardVerificationStatePartlyVerified,
+			region:        vaccinemd.RegionUSA,
+			doses: []*verification.Dose{
+				{
+					Coding: vaccinemd.Coding{
+						System: vaccinemd.CVXSystem,
+						Code:   "212", //janseen
+					},
 
-                    OccurrenceDateTime: "2021-03-16",
-                },
-            },
-            expectedMetImmunizationCriteria: true,
-        },
+					OccurrenceDateTime: "2021-03-16",
+				},
+			},
+			expectedMetImmunizationCriteria: true,
+		},
 		{
 			name:          "all criteria met doses array order not based on time",
 			expectedState: verification.CardVerificationStatePartlyVerified,
-			region:        verification.RegionUSA,
+			region:        vaccinemd.RegionUSA,
 			doses: []*verification.Dose{
 				{
 					Coding: vaccinemd.Coding{
@@ -229,14 +229,14 @@ func Test_VerifyImmunization(t *testing.T) {
 		{
 			name:                            "criteria not met as no doses passed",
 			expectedState:                   verification.CardVerificationStatePartlyVerified,
-			region:                          verification.RegionUSA,
+			region:                          vaccinemd.RegionUSA,
 			doses:                           nil,
 			expectedMetImmunizationCriteria: false,
 		},
 		{
 			name:          "criteria not met as need two does and pass one",
 			expectedState: verification.CardVerificationStatePartlyVerified,
-			region:        verification.RegionUSA,
+			region:        vaccinemd.RegionUSA,
 			doses: []*verification.Dose{
 				{
 					Coding: vaccinemd.Coding{
@@ -250,7 +250,7 @@ func Test_VerifyImmunization(t *testing.T) {
 		{
 			name:          "criteria not met as passed two does but no occurrence date so cannot get dates",
 			expectedState: verification.CardVerificationStatePartlyVerified,
-			region:        verification.RegionUSA,
+			region:        vaccinemd.RegionUSA,
 			doses: []*verification.Dose{
 				{
 					Coding: vaccinemd.Coding{
@@ -267,22 +267,22 @@ func Test_VerifyImmunization(t *testing.T) {
 			},
 			expectedMetImmunizationCriteria: false,
 		},
-        {
-            name:          "criteria NOT met one dose ok but occurence data too soon",
-            expectedState: verification.CardVerificationStatePartlyVerified,
-            region:        verification.RegionUSA,
-            doses: []*verification.Dose{
-                {
-                    Coding: vaccinemd.Coding{
-                        System: vaccinemd.CVXSystem,
-                        Code:   "212", //janseen
-                    },
+		{
+			name:          "criteria NOT met one dose ok but occurence data too soon",
+			expectedState: verification.CardVerificationStatePartlyVerified,
+			region:        vaccinemd.RegionUSA,
+			doses: []*verification.Dose{
+				{
+					Coding: vaccinemd.Coding{
+						System: vaccinemd.CVXSystem,
+						Code:   "212", //janseen
+					},
 
-                    OccurrenceDateTime: time.Now().Format("2006-01-02"),
-                },
-            },
-            expectedMetImmunizationCriteria: false,
-        },
+					OccurrenceDateTime: time.Now().Format("2006-01-02"),
+				},
+			},
+			expectedMetImmunizationCriteria: false,
+		},
 	}
 
 	for _, tc := range testCases {
