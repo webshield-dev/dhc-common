@@ -16,9 +16,9 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 			DaysSinceLastDoseCriteria:    14,
 			DaysBetweenDoesCriteriaBegin: 24,
 			DaysBetweenDoesCriteriaEnd:   92,
-			DisplayName:                  "Moderna COVID-19 Vaccine",
-			SaleProprietaryName:          "Moderna",
-			ManufacturerName:             "Moderna US Inc",
+			DisplayName:                  "Moderna",
+			SaleProprietaryName:          "Moderna COVID-19 Vaccine",
+			ManufacturerName:             "Moderna US, Inc",
 		},
 		{
 			Codes: []Coding{
@@ -32,9 +32,9 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 			DaysSinceLastDoseCriteria:    14,
 			DaysBetweenDoesCriteriaBegin: 17,
 			DaysBetweenDoesCriteriaEnd:   92,
-			DisplayName:                  "Pfizer-BioNTech",
+			DisplayName:                  "Pfizer",
 			SaleProprietaryName:          "Pfizer-BioNTech COVID-19 Vaccine",
-			ManufacturerName:             "Pfizer, Inc",
+			ManufacturerName:             "Pfizer-BioNTech",
 		},
 		{
 			Codes: []Coding{
@@ -48,7 +48,7 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 			DaysSinceLastDoseCriteria: 14,
 			DisplayName:               "AstraZeneca",
 			SaleProprietaryName:       "AstraZeneca COVID-19 Vaccine",
-			ManufacturerName:          "AstraZeneca",
+			ManufacturerName:          "AstraZeneca Pharmaceuticals LP",
 		},
 		{
 			Codes: []Coding{
@@ -62,7 +62,7 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 			DaysSinceLastDoseCriteria: 14,
 			DisplayName:               "Johnson & Johnson Janssen",
 			SaleProprietaryName:       "Janssen COVID-19 Vaccine",
-			ManufacturerName:          "Janssen",
+			ManufacturerName:          "Janssen Products, LP",
 		},
 	}
 
