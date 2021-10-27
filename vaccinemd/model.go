@@ -24,10 +24,14 @@ type CovidVaccineMetadata struct {
 	//DaysBetweenDoesCriteriaEnd end of range took from common pass recommendations
 	DaysBetweenDoesCriteriaEnd int `json:"days_between_does_criteria_end"`
 
+	//DisplayName what display to user so can be different from SaleProprietaryName if it makes more sense to user
+	//used in UI
+	DisplayName string `json:"display_name"`
+
 	//SaleProprietaryName from cdc table
 	SaleProprietaryName string `json:"sale_proprietary_name"`
 
-	//ManufacturerName short name used to display in cards
+	//ManufacturerName name of manufacturer
 	ManufacturerName string `json:"manufacturer_name"`
 }
 
