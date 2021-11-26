@@ -97,6 +97,7 @@ func Test_VerifyCardStructure(t *testing.T) {
 			results := processor.GetVerificationResults()
 			require.Equal(t, tc.expectedState, results.State)
 			require.Equal(t, tc.expectedCardStructureVerified, processor.CardStructureVerified(), "card structure verified not expected")
+			require.Equal(t, tc.expectedCardStructureVerified, results.CardStructure.AllChecksPassed)
 			require.False(t, processor.IssuerVerified(), "issuer verified not expected")
 			require.False(t, processor.ImmunizationCriteriaMet(), "imm met not expected")
 
@@ -146,6 +147,7 @@ func Test_VerifyIssuer(t *testing.T) {
 			require.Equal(t, tc.expectedState, results.State)
 			require.False(t, processor.CardStructureVerified(), "card structure verified not expected")
 			require.Equal(t, tc.expectedIssuerVerified, processor.IssuerVerified(), "issuer verified not expected")
+			require.Equal(t, tc.expectedIssuerVerified, results.Issuer.AllChecksPassed, "all checks passed is incorrect")
 			require.False(t, processor.ImmunizationCriteriaMet(), "imm met not expected")
 		})
 	}
@@ -294,12 +296,14 @@ func Test_VerifyImmunization(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, tc.expectedMetImmunizationCriteria, immVerifed)
 
+
 			//check results
 			results := processor.GetVerificationResults()
 			require.Equal(t, tc.expectedState, results.State)
 			require.False(t, processor.CardStructureVerified(), "card structure verified not expected")
 			require.False(t, processor.IssuerVerified(), "issuer verified not expected")
 			require.Equal(t, tc.expectedMetImmunizationCriteria, processor.ImmunizationCriteriaMet(), "imm met not expected")
+			require.Equal(t, tc.expectedMetImmunizationCriteria, results.Immunization.AllChecksPassed, "all checks passed not expected")
 
 		})
 	}

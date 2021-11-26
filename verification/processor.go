@@ -135,6 +135,7 @@ func (e *v1Processor) CardStructureVerified() bool {
 		e.results.CardStructure.FetchedKey &&
 		e.results.CardStructure.SignatureValid &&
 		!e.results.CardStructure.Expired {
+		e.results.CardStructure.AllChecksPassed = true
 		return true
 	}
 
@@ -162,7 +163,12 @@ func (e *v1Processor) SetExpired() {
 //
 
 func (e *v1Processor) IssuerVerified() bool {
-	return e.results.Issuer.Trusted
+	if e.results.Issuer.Trusted {
+		e.results.Issuer.AllChecksPassed = true
+		return true
+	}
+
+	return false
 }
 
 func (e *v1Processor) SetIssuerTrusted() {
@@ -179,6 +185,7 @@ func (e *v1Processor) ImmunizationCriteriaMet() bool {
 		e.results.Immunization.MetDosesRequiredCriteria &&
 		e.results.Immunization.MetDaysBetweenDoesCriteria &&
 		e.results.Immunization.MetDaysSinceLastDoseCriteria {
+		e.results.Immunization.AllChecksPassed = true
 		return true
 	}
 
