@@ -38,6 +38,9 @@ type CardVerificationResults struct {
 //CardStructureVerificationResults the card structure verifications results
 type CardStructureVerificationResults struct {
 
+	//AllChecksPassed all required checks passed
+	AllChecksPassed bool `json:"all_checks_passed"`
+
 	//SignatureChecked for some reason the verifier can choose to not verify the card signature
 	SignatureChecked bool `json:"signature_not_checked"`
 
@@ -54,12 +57,18 @@ type CardStructureVerificationResults struct {
 //IssuerVerificationResults issuer verification results
 type IssuerVerificationResults struct {
 
+	//AllChecksPassed all required checks passed
+	AllChecksPassed bool `json:"all_checks_passed"`
+
 	//Trusted issue is on a trusted whitelist
 	Trusted bool `json:"trusted"`
 }
 
 // ImmunizationVerificationResults immunization verification results
 type ImmunizationVerificationResults struct {
+
+	//AllChecksPassed all required checks passed
+	AllChecksPassed bool `json:"all_checks_passed"`
 
 	//UnKnownVaccineType the vaccine is on a regional whitelist
 	UnKnownVaccineType bool `json:"unknown_vaccine_type"`
