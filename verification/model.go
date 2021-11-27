@@ -12,14 +12,20 @@ const (
 	//CardVerificationStateUnknown no verifications have been performed
 	CardVerificationStateUnknown CardVerificationState = "unknown"
 
-	//CardVerificationStateVerified the card has been verified and all checks have passed
-	CardVerificationStateVerified CardVerificationState = "verified"
+	//CardVerificationStateValid card structure is valid, issuer is trusted, and
+	//immunization criteria has been met
+	CardVerificationStateValid CardVerificationState = "valid"
 
-	//CardVerificationStatePartlyVerified one or more verifications have failed
-	CardVerificationStatePartlyVerified CardVerificationState = "partly_verified"
+	//CardVerificationStateNotVerified the card signature could not be verified, or the issuer is unknown
+	CardVerificationStateNotVerified CardVerificationState = "not_verified"
 
-	//CardVerificationStateCorrupt the digital signature and is invalid
+	//CardVerificationStateSafetyCriteriaNotMet the card signature is valid and from a trusted issuer
+	//but the immunization criteria were not met. Card expired is also part of this
+	CardVerificationStateSafetyCriteriaNotMet CardVerificationState = "safety_criteria_not_met"
+
+	//CardVerificationStateCorrupt the digital signature is invalid
 	CardVerificationStateCorrupt CardVerificationState = "corrupt"
+
 )
 
 //CardVerificationResults all verifications for card

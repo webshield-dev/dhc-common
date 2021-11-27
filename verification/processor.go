@@ -93,25 +93,22 @@ func (e *v1Processor) calcState() {
 		return
 	}
 
-	if !e.CardStructureVerified() {
-		e.results.State = CardVerificationStatePartlyVerified
+	if !e.CardStructureVerified() || !e.IssuerVerified() {
+		//card signature not verified or the issuer is not trusted
+		e.results.State = CardVerificationStateNotVerified
 		return
 	}
 
-	if !e.IssuerVerified() {
-		e.results.State = CardVerificationStatePartlyVerified
-		return
-	}
 
 	if !e.ImmunizationCriteriaMet() {
-		e.results.State = CardVerificationStatePartlyVerified
+		e.results.State = CardVerificationStateSafetyCriteriaNotMet
 		return
 	}
 
 	//
 	// If reach here all verifications have passed and the card is valid
 	//
-	e.results.State = CardVerificationStateVerified
+	e.results.State = CardVerificationStateValid
 }
 
 //
