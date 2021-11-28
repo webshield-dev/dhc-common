@@ -85,7 +85,8 @@ func (e *v1Processor) GetVerificationResults() *CardVerificationResults {
 
 func (e *v1Processor) calcState() {
 
-	//state by assume card is great
+	//the states are checked in this order so that is one check fails it makes no sense
+	//to continue
 	e.results.State = CardVerificationStateUnknown
 
 	if e.CardCorrupted() {
@@ -93,17 +94,27 @@ func (e *v1Processor) calcState() {
 		return
 	}
 
-	if !e.CardStructureVerified() || !e.IssuerVerified() {
-		//card signature not verified or the issuer is not trusted
-		e.results.State = CardVerificationStateNotVerified
+	if !e.CardStructureVerified() {
+		e.results.State = CardVerificationStateUnVerified
 		return
 	}
 
-
+	//if criteria not met then does not matter if unknown issuer or expired
 	if !e.ImmunizationCriteriaMet() {
 		e.results.State = CardVerificationStateSafetyCriteriaNotMet
 		return
 	}
+
+	if !e.IssuerVerified() {
+		e.results.State = CardVerificationStateIssuerUnknown
+		return
+	}
+
+	if e.results.CardStructure.Expired {
+		e.results.State = CardVerificationStateExpired
+		return
+	}
+
 
 	//
 	// If reach here all verifications have passed and the card is valid
@@ -130,8 +141,7 @@ func (e *v1Processor) CardStructureVerified() bool {
 
 	if e.results.CardStructure.SignatureChecked &&
 		e.results.CardStructure.FetchedKey &&
-		e.results.CardStructure.SignatureValid &&
-		!e.results.CardStructure.Expired {
+		e.results.CardStructure.SignatureValid {
 		e.results.CardStructure.AllChecksPassed = true
 		return true
 	}

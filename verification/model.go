@@ -16,8 +16,14 @@ const (
 	//immunization criteria has been met
 	CardVerificationStateValid CardVerificationState = "valid"
 
-	//CardVerificationStateNotVerified the card signature could not be verified, or the issuer is unknown
-	CardVerificationStateNotVerified CardVerificationState = "not_verified"
+	//CardVerificationStateUnVerified the card signature could not be verified
+	CardVerificationStateUnVerified CardVerificationState = "unverified"
+
+	//CardVerificationStateExpired the card has expired
+	CardVerificationStateExpired CardVerificationState = "expired"
+
+	//CardVerificationStateIssuerUnknown card issuer not on a white list
+	CardVerificationStateIssuerUnknown CardVerificationState = "issuer_unknown"
 
 	//CardVerificationStateSafetyCriteriaNotMet the card signature is valid and from a trusted issuer
 	//but the immunization criteria were not met. Card expired is also part of this
