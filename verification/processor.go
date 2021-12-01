@@ -95,16 +95,17 @@ func (e *v1Processor) calcState() {
 		return
 	}
 
+	//if safety criteria not met then does not matter if anything else is good or bad
+	if !e.ImmunizationCriteriaMet() {
+		e.results.State = CardVerificationStateSafetyCriteriaNotMet
+		return
+	}
+
 	if !e.CardStructureVerified() {
 		e.results.State = CardVerificationStateUnVerified
 		return
 	}
 
-	//if criteria not met then does not matter if unknown issuer or expired
-	if !e.ImmunizationCriteriaMet() {
-		e.results.State = CardVerificationStateSafetyCriteriaNotMet
-		return
-	}
 
 	if !e.IssuerVerified() {
 		e.results.State = CardVerificationStateIssuerUnknown
