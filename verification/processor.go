@@ -2,6 +2,7 @@ package verification
 
 import (
 	"fmt"
+	"github.com/webshield-dev/dhc-common/pdm"
 	"github.com/webshield-dev/dhc-common/vaccinemd"
 	"time"
 )
@@ -51,7 +52,7 @@ type Processor interface {
 
 	VerifyImmunization(
 		region vaccinemd.Region,
-		Doses []*Dose, // the doses administered
+		Doses []*pdm.Dose, // the doses administered
 	) (bool, error)
 
 	//ImmunizationCriteriaMet true if all the immunization criteria have been met, can be called
@@ -94,16 +95,17 @@ func (e *v1Processor) calcState() {
 		return
 	}
 
+	//if safety criteria not met then does not matter if anything else is good or bad
+	if !e.ImmunizationCriteriaMet() {
+		e.results.State = CardVerificationStateSafetyCriteriaNotMet
+		return
+	}
+
 	if !e.CardStructureVerified() {
 		e.results.State = CardVerificationStateUnVerified
 		return
 	}
 
-	//if criteria not met then does not matter if unknown issuer or expired
-	if !e.ImmunizationCriteriaMet() {
-		e.results.State = CardVerificationStateSafetyCriteriaNotMet
-		return
-	}
 
 	if !e.IssuerVerified() {
 		e.results.State = CardVerificationStateIssuerUnknown
@@ -201,7 +203,7 @@ func (e *v1Processor) ImmunizationCriteriaMet() bool {
 
 func (e *v1Processor) VerifyImmunization(
 	region vaccinemd.Region,
-	doses []*Dose, // the doses administered
+	doses []*pdm.Dose, // the doses administered
 ) (bool, error) {
 
 	if len(doses) == 0 {
@@ -269,7 +271,7 @@ func (e *v1Processor) VerifyImmunization(
 	//
 	// find last dose
 	//
-	var lastDose *Dose
+	var lastDose *pdm.Dose
 	for _, dose := range doses {
 
 		if lastDose == nil {
@@ -325,7 +327,7 @@ func (e *v1Processor) VerifyImmunization(
 
 }
 
-func getOccurrenceTime(dose *Dose) (occurrenceTime *time.Time, err error) {
+func getOccurrenceTime(dose *pdm.Dose) (occurrenceTime *time.Time, err error) {
 	//
 	// http://build.fhir.org/ig/HL7/fhir-shc-vaccination-ig/StructureDefinition-shc-vaccination-dm-definitions.html#Immunization.occurrence[x]:occurrenceDateTime
 	//

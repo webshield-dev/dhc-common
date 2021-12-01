@@ -2,6 +2,7 @@ package verification_test
 
 import (
 	"github.com/stretchr/testify/require"
+	"github.com/webshield-dev/dhc-common/pdm"
 	"github.com/webshield-dev/dhc-common/vaccinemd"
 	"github.com/webshield-dev/dhc-common/verification"
 	"testing"
@@ -211,7 +212,7 @@ func Test_SafetyCriteriaNotMet(t *testing.T) {
 	type testCase struct {
 		name                            string
 		region                          vaccinemd.Region
-		doses                           []*verification.Dose
+		doses                           []*pdm.Dose
 		expectedState                   verification.CardVerificationState
 		expectedMetImmunizationCriteria bool
 	}
@@ -221,7 +222,7 @@ func Test_SafetyCriteriaNotMet(t *testing.T) {
 			name:          "all criteria met two doses",
 			expectedState: verification.CardVerificationStateValid,
 			region:        vaccinemd.RegionUSA,
-			doses: []*verification.Dose{
+			doses: []*pdm.Dose{
 				{
 					Coding: vaccinemd.Coding{
 						System: vaccinemd.CVXSystem,
@@ -245,7 +246,7 @@ func Test_SafetyCriteriaNotMet(t *testing.T) {
 			name:          "all criteria met one doses",
 			expectedState: verification.CardVerificationStateValid,
 			region:        vaccinemd.RegionUSA,
-			doses: []*verification.Dose{
+			doses: []*pdm.Dose{
 				{
 					Coding: vaccinemd.Coding{
 						System: vaccinemd.CVXSystem,
@@ -261,7 +262,7 @@ func Test_SafetyCriteriaNotMet(t *testing.T) {
 			name:          "all criteria met doses array order not based on time",
 			expectedState: verification.CardVerificationStateValid,
 			region:        vaccinemd.RegionUSA,
-			doses: []*verification.Dose{
+			doses: []*pdm.Dose{
 				{
 					Coding: vaccinemd.Coding{
 						System: vaccinemd.CVXSystem,
@@ -292,7 +293,7 @@ func Test_SafetyCriteriaNotMet(t *testing.T) {
 			name:          "criteria not met as need two does and pass one",
 			expectedState: verification.CardVerificationStateSafetyCriteriaNotMet,
 			region:        vaccinemd.RegionUSA,
-			doses: []*verification.Dose{
+			doses: []*pdm.Dose{
 				{
 					Coding: vaccinemd.Coding{
 						System: vaccinemd.CVXSystem,
@@ -306,7 +307,7 @@ func Test_SafetyCriteriaNotMet(t *testing.T) {
 			name:          "criteria not met as passed two does but no occurrence date so cannot get dates",
 			expectedState: verification.CardVerificationStateSafetyCriteriaNotMet,
 			region:        vaccinemd.RegionUSA,
-			doses: []*verification.Dose{
+			doses: []*pdm.Dose{
 				{
 					Coding: vaccinemd.Coding{
 						System: vaccinemd.CVXSystem,
@@ -326,7 +327,7 @@ func Test_SafetyCriteriaNotMet(t *testing.T) {
 			name:          "criteria NOT met one dose ok but occurence data too soon",
 			expectedState: verification.CardVerificationStateSafetyCriteriaNotMet,
 			region:        vaccinemd.RegionUSA,
-			doses: []*verification.Dose{
+			doses: []*pdm.Dose{
 				{
 					Coding: vaccinemd.Coding{
 						System: vaccinemd.CVXSystem,
@@ -379,7 +380,7 @@ func setIssuerResultsOK(ps verification.Processor) {
 
 //setImmunizationResultsOK set so ok
 func setImmunizationResultsOK(t *testing.T, ps verification.Processor) {
-	doses := []*verification.Dose{
+	doses := []*pdm.Dose{
 		{
 			Coding: vaccinemd.Coding{
 				System: vaccinemd.CVXSystem,
