@@ -107,6 +107,7 @@ func (e *v1Processor) calcState() {
 	if e.results.CardStructure.IsPaperCard {
 		//all other checks require a digital card so stop here
 		e.results.State = CardVerificationStatePaperCard
+		return
 	}
 
 	if !e.CardStructureVerified() {
