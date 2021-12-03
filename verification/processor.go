@@ -18,6 +18,9 @@ type Processor interface {
 	// Card struct setters
 	//
 
+	//SetIsPaperCard the card is a paper card so many checks cannot be made
+	SetIsPaperCard()
+
 	//SetSignatureChecked do not check signature for some reason
 	SetSignatureChecked()
 
@@ -101,6 +104,11 @@ func (e *v1Processor) calcState() {
 		return
 	}
 
+	if e.results.CardStructure.IsPaperCard {
+		//all other checks require a digital card so stop here
+		e.results.State = CardVerificationStatePaperCard
+	}
+
 	if !e.CardStructureVerified() {
 		e.results.State = CardVerificationStateUnVerified
 		return
@@ -165,6 +173,10 @@ func (e *v1Processor) SetSignatureValid() {
 
 func (e *v1Processor) SetExpired() {
 	e.results.CardStructure.Expired = true
+}
+
+func (e *v1Processor) SetIsPaperCard() {
+	e.results.CardStructure.IsPaperCard = true
 }
 
 //

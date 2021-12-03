@@ -15,6 +15,9 @@ const (
 	//CardVerificationStateUnVerified the card signature could not be verified
 	CardVerificationStateUnVerified CardVerificationState = "unverified"
 
+	//CardVerificationStatePaperCard underlying card is paper not a digital so not all checks could be run
+	CardVerificationStatePaperCard CardVerificationState = "paper-card"
+
 	//CardVerificationStateExpired the card has expired
 	CardVerificationStateExpired CardVerificationState = "expired"
 
@@ -60,6 +63,9 @@ type CardStructureVerificationResults struct {
 
 	//Expired true if an exp date and has passed
 	Expired bool `json:"expired"`
+
+	//IsPaperCard the card is a paper card
+	IsPaperCard bool `json:"is_paper_card"`
 }
 
 //IssuerVerificationResults issuer verification results
