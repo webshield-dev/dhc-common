@@ -364,7 +364,57 @@ func Test_SafetyCriteriaNotMet(t *testing.T) {
 	}
 }
 
+func Test_CardStatePaper(t *testing.T) {
+
+	type testCase struct {
+		name          string
+		paperCard bool
+		expectedState verification.CardVerificationState
+	}
+
+	testCases := []testCase{
+		{
+			name:          "state should be paper if a paper card",
+			expectedState: verification.CardVerificationStateValid,
+			paperCard:      true,
+		},
+		{
+			name:          "if not a paper card should continue checks",
+			expectedState: verification.CardVerificationStateValid,
+			paperCard:       true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			processor := verification.NewProcessor()
+
+			//set all other state ok
+			setCardStructureOK(processor)
+			setImmunizationResultsOK(t, processor)
+			setIssuerResultsOK(processor)
+
+			if tc.paperCard {
+				processor.SetIsPaperCard()
+			}
+
+			results := processor.GetVerificationResults()
+			require.Equal(t, tc.expectedState, results.State)
+
+			require.Equal(t, tc.expectedState, results.State)
+
+			require.True(t, processor.CardStructureVerified(), "card structure should be ok")
+			require.True(t, processor.ImmunizationCriteriaMet(), "imm should be be met as set to ok")
+			require.True(t, processor.IssuerVerified(), "issuer should be verified")
+
+		})
+	}
+}
+
+//-----------------
 //Helpers
+//------------------
 
 //setCardStructureOK set so ok
 func setCardStructureOK(ps verification.Processor) {
