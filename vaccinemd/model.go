@@ -7,6 +7,10 @@ package vaccinemd
 //CovidVaccineMetadata metadata about a covid vaccine
 //from https://www.cdc.gov/vaccines/programs/iis/COVID-19-related-codes.html
 type CovidVaccineMetadata struct {
+
+	//ID for the vaccine metadata
+	ID string `json:"id"`
+
 	Codes []Coding
 
 	//CVXStatus cvx status from the cdc table

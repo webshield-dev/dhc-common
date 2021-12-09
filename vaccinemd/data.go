@@ -5,6 +5,7 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 
 	result := []*CovidVaccineMetadata{
 		{
+			ID: CVXSystem + "#" + "207",
 			Codes: []Coding{
 				{
 					System: CVXSystem,
@@ -21,6 +22,7 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 			ManufacturerName:             "Moderna US, Inc",
 		},
 		{
+			ID: CVXSystem + "#" + "208",
 			Codes: []Coding{
 				{
 					System: CVXSystem,
@@ -37,6 +39,7 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 			ManufacturerName:             "Pfizer-BioNTech",
 		},
 		{
+			ID: CVXSystem + "#" + "210",
 			Codes: []Coding{
 				{
 					System: CVXSystem,
@@ -51,6 +54,7 @@ func createCovidVaccineMetadata() []*CovidVaccineMetadata {
 			ManufacturerName:          "AstraZeneca Pharmaceuticals LP",
 		},
 		{
+			ID: CVXSystem + "#" + "212",
 			Codes: []Coding{
 				{
 					System: CVXSystem,
