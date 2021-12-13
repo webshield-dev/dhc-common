@@ -98,6 +98,12 @@ func (e *v1Processor) calcState() {
 		return
 	}
 
+	if !e.results.Immunization.VerificationPerformed {
+		//if no verification of the immunization has been performed then makes no sense
+		//to continue to leave as unknown, cannot mark as criteria not met as we do not know
+		return
+	}
+
 	//if safety criteria not met then does not matter if anything else is good or bad
 	if !e.ImmunizationCriteriaMet() {
 		e.results.State = CardVerificationStateSafetyCriteriaNotMet
@@ -115,7 +121,6 @@ func (e *v1Processor) calcState() {
 		return
 	}
 
-
 	if !e.IssuerVerified() {
 		e.results.State = CardVerificationStateIssuerUnknown
 		return
@@ -125,7 +130,6 @@ func (e *v1Processor) calcState() {
 		e.results.State = CardVerificationStateExpired
 		return
 	}
-
 
 	//
 	// If reach here all verifications have passed and the card is valid
@@ -219,6 +223,9 @@ func (e *v1Processor) VerifyImmunization(
 	doses []*pdm.Dose, // the doses administered
 ) (bool, error) {
 
+	//have been asked to verify
+	e.results.Immunization.VerificationPerformed = true
+
 	if len(doses) == 0 {
 		return false, nil
 	}
@@ -279,7 +286,6 @@ func (e *v1Processor) VerifyImmunization(
 		e.results.Immunization.MetDosesRequiredCriteria = false
 		return false, nil //no point in checking dates as not enough doses
 	}
-
 
 	//
 	// find last dose

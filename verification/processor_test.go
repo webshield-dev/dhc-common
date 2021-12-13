@@ -405,6 +405,45 @@ func Test_CardStatePaper(t *testing.T) {
 	}
 }
 
+func Test_CardUnknownAsNoVerificationCalled(t *testing.T) {
+
+	type testCase struct {
+		name            string
+		setImmunization bool
+		expectedState   verification.CardVerificationState
+	}
+
+	testCases := []testCase{
+		{
+			name:            "if not verifying immunization should set to unknown",
+			expectedState:   verification.CardVerificationStateUnknown,
+			setImmunization: false,
+		},
+		{
+			name:            "if verifying all should set to valid",
+			expectedState:   verification.CardVerificationStateValid,
+			setImmunization: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			processor := verification.NewProcessor()
+
+			setCardStructureOK(processor)
+			setIssuerResultsOK(processor)
+
+			if tc.setImmunization {
+				setImmunizationResultsOK(t, processor)
+			}
+
+			results := processor.GetVerificationResults()
+			require.Equal(t, tc.expectedState, results.State)
+		})
+	}
+}
+
 //-----------------
 //Helpers
 //------------------
