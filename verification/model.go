@@ -30,7 +30,6 @@ const (
 
 	//CardVerificationStateCorrupt the digital signature is invalid
 	CardVerificationStateCorrupt CardVerificationState = "corrupt"
-
 )
 
 //CardVerificationResults all verifications for card
@@ -80,6 +79,10 @@ type IssuerVerificationResults struct {
 
 // ImmunizationVerificationResults immunization verification results
 type ImmunizationVerificationResults struct {
+
+	//VerificationPerformed if false code cannot say if safety criteria are met or not
+	//so need to leave as unknown
+	VerificationPerformed bool `json:"verification_performed"`
 
 	//AllChecksPassed all required checks passed
 	AllChecksPassed bool `json:"all_checks_passed"`
